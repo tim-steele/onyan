@@ -1,10 +1,21 @@
 {
   "name": "onyan",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Bunyan plugin that sends JSON logs to an API endpoint.",
   "main": "./onyan.js",
   "author": "Tim Steele",
   "license": "MIT",
+  "repository": {
+	"type": "git",
+	"url": "https://github.com/tim-steele/onyan"
+  },
+  "bugs": {
+	"url": "https://github.com/tim-steele/onyan/issues",
+	"email": "tim.steele@whoistimsteele.com"
+  },
+  "engines": {
+	  "node": ">=6.0.0"
+  },
   "dependencies": {
     "request": "^2.75.0"
   }
