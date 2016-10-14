@@ -171,13 +171,18 @@ class Onyan extends stream.Writable {
 	 */
 	write ( stream ) {
 
+
+		var stream = stream;
+
+		// Check if stream is a string; If so,
 		// Make sure that stream is parsable JSON;
-		var stream;
-		try {
-			stream = JSON.parse( stream );
-		} catch ( e ) {
-			return console.error( e.toString() );
-		};
+		if ( typeof stream === 'string' ) {
+			try {
+				stream = JSON.parse( stream );
+			} catch ( e ) {
+				return console.error( e.toString() );
+			};
+		}
 
 		// Create the request object, and attach the
 		// the body JSON;
@@ -188,7 +193,7 @@ class Onyan extends stream.Writable {
 		// so your logging doesn't kill the JS thread;
 		request( req, ( error, response, body ) => {
 			if ( error ) console.error( error.stack );
-			if ( response && response.statusCode !== 200 ) console.error( 'Error: ', response.statusCode + ' - ' + response.statusMessage );
+			if ( response && response.statusCode !== 200 ) console.error( 'Onyan Error: ', response.statusCode + ' - ' + response.statusMessage );
 		});
 
 	};

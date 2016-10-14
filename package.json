@@ -1,6 +1,6 @@
 {
   "name": "onyan",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A Bunyan plugin that sends JSON logs to an API endpoint.",
   "main": "./onyan.js",
   "author": "Tim Steele",
