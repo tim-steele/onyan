@@ -1,7 +1,7 @@
 {
   "name": "onyan",
-  "version": "1.0.2",
-  "description": "A Bunyan plugin that sends JSON logs to an API endpoint.",
+  "version": "1.1.0",
+  "description": "A Bunyan plugin that sends JSON logs to an API endpoint. Can be used for NodeJS remote error notification.",
   "main": "./onyan.js",
   "author": "Tim Steele",
   "license": "MIT",

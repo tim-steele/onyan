@@ -3,8 +3,11 @@
  * @author Tim Steele <tim.steele@whoistimsteele.com>
  * @license MIT
  */
-const request	= require( 'request' );
-const stream	= require( 'stream' );
+
+const request		= require( 'request' );
+const stream		= require( 'stream' );
+const getDeepProp	= require( './utils/getDeepProp' );
+const scrubNewLines	= require( './utils/scrubNewLines' );
 
 /**
  * @class Onyan
@@ -55,8 +58,16 @@ class Onyan extends stream.Writable {
 
 		// Cache local the configs from the
 		// config argument;
-		const { url, method, headers, custom } = configs;
+		const {
+			url,
+			method,
+			headers,
+			custom,
+			schema
+		} = configs;
 		let xhr = {};
+		const parser = /{{([a-zA-Z-\.]+)}}/g;
+
 
 		// Make sure we have a proper url;
 		if ( !url || typeof url !== 'string' || url.trim() === '' ) {
@@ -142,6 +153,33 @@ class Onyan extends stream.Writable {
 			xhr = Object.assign( {}, custom, xhr );
 		};
 
+		// Check if the user sent a schema string for formatting data;
+		if ( schema && typeof schema === "string" ) {
+
+			// Give this object a render function;
+			this.render = function render ( schema, data ) {
+
+				// Force a copy of the schema object;
+				var schema = ( ' ' + schema ).slice( 1 );
+
+				return ( function renderSchemaWithData ( schema, data ) {
+						// Replaceing {{}} with `data` properties;
+	                    return schema.replace( parser, function parse ( match, substring, index, original ) {
+
+							// Are we shallow property or a deep property;
+							const prop = ( substring.indexOf( '.' ) === -1 ) ? data[ substring ] : getDeepProp( data, substring );
+
+							// return the value if we got, otherwise empty string;
+	                        return ( prop ) ? scrubNewLines( prop ) : '';
+	                    });
+					}
+				).call( this, schema, data );
+
+			}.bind( this, schema );
+
+		};
+
+
 		/**
 		 * @name Onyan#xhr
 		 * @type Object
@@ -171,7 +209,6 @@ class Onyan extends stream.Writable {
 	 */
 	write ( stream ) {
 
-
 		var stream = stream;
 
 		// Check if stream is a string; If so,
@@ -180,20 +217,24 @@ class Onyan extends stream.Writable {
 			try {
 				stream = JSON.parse( stream );
 			} catch ( e ) {
-				return console.error( e.toString() );
+				return console.log( e.toString() );
 			};
-		}
+		};
+
+		const payload = ( typeof this.render === 'function' ) ? JSON.parse( this.render( stream ) ) : stream;
+
+		console.log( 'PAYLOAD', payload )
 
 		// Create the request object, and attach the
 		// the body JSON;
-		const req = Object.assign( {}, this.xhr, { body: stream } );
+		const req = Object.assign( {}, this.xhr, { body: payload } );
 
 		// Make the request to the server - if something goes wrong
 		// write the errors to the console instead of throwing them
 		// so your logging doesn't kill the JS thread;
 		request( req, ( error, response, body ) => {
-			if ( error ) console.error( error.stack );
-			if ( response && response.statusCode !== 200 ) console.error( 'Onyan Error: ', response.statusCode + ' - ' + response.statusMessage );
+			if ( error ) console.log( error.stack );
+			if ( response && response.statusCode !== 200 ) console.log( 'Onyan Error: ', response.statusCode + ' - ' + response.statusMessage );
 		});
 
 	};
