@@ -223,8 +223,6 @@ class Onyan extends stream.Writable {
 
 		const payload = ( typeof this.render === 'function' ) ? JSON.parse( this.render( stream ) ) : stream;
 
-		console.log( 'PAYLOAD', payload )
-
 		// Create the request object, and attach the
 		// the body JSON;
 		const req = Object.assign( {}, this.xhr, { body: payload } );
