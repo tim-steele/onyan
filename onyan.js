@@ -66,7 +66,7 @@ class Onyan extends stream.Writable {
 			schema
 		} = configs;
 		let xhr = {};
-		const parser = /{{([a-zA-Z-\.]+)}}/g;
+		const parser = /{{([a-zA-Z-\.\*]+)}}/g;
 
 
 		// Make sure we have a proper url;
@@ -164,14 +164,19 @@ class Onyan extends stream.Writable {
 
 				return ( function renderSchemaWithData ( schema, data ) {
 						// Replaceing {{}} with `data` properties;
-	                    return schema.replace( parser, function parse ( match, substring, index, original ) {
+	          return schema.replace( parser, function parse ( match, substring, index, original ) {
+              /**
+               * @version 1.2.0: Can use {{.*}} to dump the entire data object
+               */
+              // Need to make the JSON dumb safe for API usage.
+              if ( match === "{{.*}}" && stream ) return JSON.stringify( data, null, 4 ).replace( /(\n)+/g, '\\n' ).replace( /"/g, '\\"' );
 
 							// Are we shallow property or a deep property;
 							const prop = ( substring.indexOf( '.' ) === -1 ) ? data[ substring ] : getDeepProp( data, substring );
 
 							// return the value if we got, otherwise empty string;
-	                        return ( prop ) ? scrubNewLines( prop ) : '';
-	                    });
+	            return ( prop ) ? scrubNewLines( prop ) : '';
+	          });
 					}
 				).call( this, schema, data );
 
@@ -209,19 +214,19 @@ class Onyan extends stream.Writable {
 	 */
 	write ( stream ) {
 
-		var stream = stream;
+		var data = stream;
 
 		// Check if stream is a string; If so,
 		// Make sure that stream is parsable JSON;
 		if ( typeof stream === 'string' ) {
 			try {
-				stream = JSON.parse( stream );
+				data = JSON.parse( stream );
 			} catch ( e ) {
 				return console.log( e.toString() );
 			};
 		};
 
-		const payload = ( typeof this.render === 'function' ) ? JSON.parse( this.render( stream ) ) : stream;
+		const payload = ( typeof this.render === 'function' ) ? JSON.parse( this.render( data, stream ) ) : stream;
 
 		// Create the request object, and attach the
 		// the body JSON;
