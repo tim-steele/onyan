@@ -226,19 +226,27 @@ class Onyan extends stream.Writable {
 			};
 		};
 
-		const payload = ( typeof this.render === 'function' ) ? JSON.parse( this.render( data, stream ) ) : stream;
+    let payload;
 
-		// Create the request object, and attach the
-		// the body JSON;
-		const req = Object.assign( {}, this.xhr, { body: payload } );
+    try {
+      payload = ( typeof this.render === 'function' ) ? JSON.parse( this.render( data, stream ) ) : stream;
+    } catch(e) {
+      console.error(e);
+    }
 
-		// Make the request to the server - if something goes wrong
-		// write the errors to the console instead of throwing them
-		// so your logging doesn't kill the JS thread;
-		request( req, ( error, response, body ) => {
-			if ( error ) console.log( error.stack );
-			if ( response && response.statusCode !== 200 ) console.log( 'Onyan Error: ', response.statusCode + ' - ' + response.statusMessage );
-		});
+    if (payload) {
+      // Create the request object, and attach the
+  		// the body JSON;
+  		const req = Object.assign( {}, this.xhr, { body: payload } );
+
+  		// Make the request to the server - if something goes wrong
+  		// write the errors to the console instead of throwing them
+  		// so your logging doesn't kill the JS thread;
+  		request( req, ( error, response, body ) => {
+  			if ( error ) console.log( error.stack );
+  			if ( response && response.statusCode !== 200 ) console.log( 'Onyan Error: ', response.statusCode + ' - ' + response.statusMessage );
+  		});
+    }
 
 	};
 
